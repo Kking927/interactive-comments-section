@@ -12,74 +12,15 @@
 <body>
     <main class="comments comments__container">
 
-        <!-- List of All Comment Threads -->
-        <ul class="comments__list">
-
-            <!-- Single Comment Thread Item (Parent) -->
-            <li class="comments__item">
-
-                <!-- Individual Comment Card -->
-                <article class="comment">
-
-                    <!-- Score Counter -->
-                    <div class="comment__score">
-                        <button type="button" class="comment__score-btn comment__score-btn--plus" aria-label="Upvote">
-                            <img src="images/icon-plus.svg" alt="" />
-                        </button>
-
-                        <span class="comment__score-number">12</span>
-
-                        <button type="button" class="comment__score-btn comment__score-btn--minus"
-                            aria-label="Downvote">
-                            <img src="images/icon-minus.svg" alt="" />
-                        </button>
-                    </div>
-
-                    <!-- Comment Content Container -->
-                    <div class="comment__content">
-
-                        <!-- Header Section: Avatar, Name, Time, Actions -->
-                        <header class="comment__header">
-                            <div class="comment__user">
-                                <img src="images/image-amyrobson.png" alt="Amy Robson" />
-                                <span class="comment__username">amyrobson</span>
-                                <span class="comment__badge comment__badge--you">you</span>
-                                <span class="comment__date">1 month ago</span>
-                            </div>
-
-                            <!-- Action Buttons (Reply / Delete / Edit) -->
-                            <div class="comment__actions">
-                                <button type="button" class="comment__action comment__action--reply">
-                                    <img src="images/icon-reply.svg" alt="" /> Reply
-                                </button>
-                            </div>
-                        </header>
-
-                        <!-- Main Body Text -->
-                        <p class="comment__text">
-                            <span class="comment__replying-to">@maxblagun</span>
-                            Impressive! Though it seems the drag feature could be improved. But overall it looks
-                            incredible.
-                        </p>
-
-                    </div>
-                </article>
-
-                <!-- Nested Replies Container -->
-                <div class="comment__replies">
-                    <ul class="comments__list">
-                        <!-- Reply items go here -->
-                    </ul>
-                </div>
-
-            </li>
+        <!-- Dynamic Comment Threads Container -->
+        <ul class="comments__list" id="comments-list">
+            <!-- Inject comment threads here with JavaScript -->
         </ul>
 
-        <!-- Add New Comment Form at Bottom -->
-        <form class="comment__form">
-            <img src="images/image-juliusomo.png" alt="juliusomo's avatar" />
-            <textarea class="comment__form-input" placeholder="Add a comment..." rows="3" aria-label="Add a comment"
-                required></textarea>
+        <!-- Add New Comment Form -->
+        <form class="comment__form" id="comment-form">
+            <img src="" alt="" id="current-user-avatar" class="comment__form-avatar" />
+            <textarea class="comment__form-input" id="comment-input" placeholder="Add a comment..." rows="3" aria-label="Add a comment" required></textarea>
             <button type="submit" class="comment__form-button">Send</button>
         </form>
 
