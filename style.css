@@ -1,0 +1,242 @@
+/* ==========================================
+Import Font & CSS Variables
+   ================================          */
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap');
+
+:root {
+    /* Primary Colors */
+    --purple-600: hsl(238, 40%, 52%);
+    --pink-400: hsl(358, 79%, 66%);
+    --purple-200: hsl(239, 57%, 85%);
+    --pink-200: hsl(357, 100%, 86%)
+
+    /* Neutral Colors */
+    --grey-800: hsl(212, 24%, 26%);
+    --grey-500: hsl(211, 10%, 45%);
+    --grey-100: hsl(223, 19%, 93%);
+    --grey-50: hsl(228, 33%, 97%);
+    --white: hsl(0, 100%, 100%);
+
+    /* Typography */
+    --font-family: 'Rubik', sans-serif;
+
+    /*Font Sizes */
+    --fs-base: 1rem; /* 16px */
+
+    /* Font Weights */
+    --fw-regular: 400;
+    --fw-medium: 500;
+    --fw-bold: 700;
+}
+
+body {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    font-weight: var(--fw-regular);
+    background-color: var(--grey-50);
+    color: var(--grey-500);
+}
+
+/* Reset */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    line-height: 1.5;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+ul,
+ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+img,
+picture {
+    max-width: 100%;
+    display: block;
+}
+
+/* ==========================================
+ Main Layout & Containers
+   ================================          */
+.comments {
+    /* Main wrapper styles */
+}
+
+.comments__container {
+    /* Max width, centering, padding */
+}
+
+.comments__list {
+    /* Remove default list styles, add spacing */
+}
+
+.comments__item {
+    /* Spacing between comment threads */
+}
+
+
+/* ==========================================
+Comment Card Component
+   ================================          */
+.comment {
+    /* Main comment box background, padding, flex layout */
+}
+
+/* Score Counter */
+.comment__score {
+    /* Voting column layout */
+}
+
+.comment__score-btn {
+    /* Button reset styles */
+}
+
+.comment__score-btn--plus {
+    /* Plus button specific styles */
+}
+
+.comment__score-btn--minus {
+    /* Minus button specific styles */
+}
+
+.comment__score-number {
+    /* Score text color, font weight */
+}
+
+/* Comment Content Area */
+.comment__content {
+    /* Main text and header wrapper */
+}
+
+.comment__header {
+    /* User info and action buttons layout */
+}
+
+.comment__user {
+    /* Avatar, username, date alignment */
+}
+
+.comment__username {
+    /* Font weight, color */
+}
+
+.comment__badge {
+    /* "You" badge background, padding */
+}
+
+.comment__badge--you {
+    /* Specific styling for the active user badge */
+}
+
+.comment__date {
+    /* Timestamp color and font size */
+}
+
+/* Action Buttons (Reply, Edit, Delete) */
+.comment__actions {
+    /* Action buttons layout */
+}
+
+.comment__action {
+    /* Base action button styles */
+}
+
+.comment__action--reply {
+    /* Reply button color/hover */
+}
+
+.comment__action--delete {
+    /* Delete button color (usually red) */
+}
+
+.comment__action--edit {
+    /* Edit button color */
+}
+
+/* Comment Body Text */
+.comment__text {
+    /* Comment body text styling */
+}
+
+.comment__replying-to {
+    /* Mention tag (e.g., @maxblagun) color */
+}
+
+
+/* ==========================================
+3. Nested Replies
+   ================================          */
+.comment__replies {
+    /* Indentation and vertical thread line */
+}
+
+
+/* ==========================================
+Add Comment Form
+   ================================          */
+.comment__form {
+    /* Form layout, background, padding */
+}
+
+.comment__form-avatar {
+    /* User avatar sizing */
+}
+
+.comment__form-input {
+    /* Textarea sizing, border, placeholder styling */
+}
+
+.comment-form__button {
+    text-transform: uppercase;
+}
+
+/* ==========================================
+Media Queries / Responsive Design
+   ================================          */
+
+/* Small devices / Tablets (768px and up) */
+@media screen and (min-width: 48rem) {
+    /* Add tablet-specific styles here */
+}
+
+/* Large devices / Desktops (1024px and up) */
+@media screen and (min-width: 64rem) {
+    /* Add desktop-specific styles here */
+}
+
+/* ==========================================
+Accessibility: Reduced Motion
+   ================================          */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
