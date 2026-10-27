@@ -27,6 +27,9 @@ Import Font & CSS Variables
     --fw-regular: 400;
     --fw-medium: 500;
     --fw-bold: 700;
+
+    /* Spacing */
+    --comments-gap: 1.125rem;
 }
 
 /* Reset */
@@ -86,9 +89,8 @@ body {
 .comments__container {
     width: 100%;
     max-width: 47.75rem;
-    margin: clamp(1rem, 3vw, 2rem) auto;
+    margin: clamp(1.375rem, 4vw, 4rem) auto;
     padding: 0 clamp(0.5rem, 2vw, 1rem);
-    box-sizing: border-box;
 }
 
 .comments__list {
@@ -96,7 +98,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 1.125rem;
+    gap: var(--comments-gap);
 }
 
 .comments__item {
@@ -116,18 +118,21 @@ Comment Card Component
     background-color: var(--white);
     padding: 1.5rem 1.5rem 0.5rem;
     border-radius: 8px;
+    margin-block-end: var(--comments-gap);
 }
 
 /* Score Counter */
 .comment__score {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
-    gap: 1.125rem;
+    gap: 1.0625rem;
     font-weight: var(--fw-medium);
     color: var(--purple-600);
     background-color: var(--grey-50);
-    padding: 0.75rem;
+    padding: 0.75rem 0.75rem ;
+    padding: 0.75rem 0.75rem 1rem 0.75rem;
     border-radius: 8px;
 }
 
@@ -218,7 +223,7 @@ Comment Card Component
 
 /* Comment Body Text */
 .comment__text {
-   
+
 }
 
 .comment__replying-to {
@@ -230,9 +235,10 @@ Comment Card Component
 3. Nested Replies
    ================================          */
 .comment__replies {
-    /* Indentation and vertical thread line */
+    margin-left: 2.5rem; 
+    padding-left: 1rem;
+    border-left: 2px solid var(--grey-100);
 }
-
 
 /* ==========================================
 Add Comment Form
