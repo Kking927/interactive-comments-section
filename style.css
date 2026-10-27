@@ -236,7 +236,7 @@ Comment Card Component
    ================================          */
 .comment__replies {
     margin-left: 2.5rem; 
-    padding-left: 1rem;
+    padding-left: 2.5rem;
     border-left: 2px solid var(--grey-100);
 }
 
