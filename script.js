@@ -70,8 +70,10 @@ function createCommentElement(comment) {
         <header class="comment__header">
             <div class="comment__user">
             <img src="${comment.user.image.png}" alt="${comment.user.username}" />
+            <div class="comment__user-details">
             <span class="comment__username">${comment.user.username}</span>
             ${isCurrentUser ? '<span class="comment__badge comment__badge--you">you</span>' : ''}
+            </div>
             <span class="comment__date">${comment.createdAt}</span>
             </div>
 
@@ -101,7 +103,7 @@ function createCommentElement(comment) {
 
     <!-- Nested Replies Container -->
     <div class="comment__replies">
-        <ul class="comments__list">
+        <ul class="comments__list comments__list--nested">
         <!-- Child replies injected here -->
         </ul>
     </div>
