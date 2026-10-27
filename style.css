@@ -8,7 +8,7 @@ Import Font & CSS Variables
     --purple-600: hsl(238, 40%, 52%);
     --pink-400: hsl(358, 79%, 66%);
     --purple-200: hsl(239, 57%, 85%);
-    --pink-200: hsl(357, 100%, 86%)
+    --pink-200: hsl(357, 100%, 86%);
 
     /* Neutral Colors */
     --grey-800: hsl(212, 24%, 26%);
@@ -78,22 +78,29 @@ body {
     font-weight: var(--fw-regular);
     background-color: var(--grey-50);
     color: var(--grey-500);
-}
-
-.comments {
-    /* Main wrapper styles */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .comments__container {
-    /* Max width, centering, padding */
+    width: 100%;
+    max-width: 47.75rem;
+    margin: clamp(1rem, 3vw, 2rem) auto;
+    padding: 0 clamp(0.5rem, 2vw, 1rem);
+    box-sizing: border-box;
 }
 
 .comments__list {
-    /* Remove default list styles, add spacing */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1.125rem;
 }
 
 .comments__item {
-    /* Spacing between comment threads */
+    
 }
 
 
@@ -101,12 +108,27 @@ body {
 Comment Card Component
    ================================          */
 .comment {
-    /* Main comment box background, padding, flex layout */
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1.5rem;
+    background-color: var(--white);
+    padding: 1.5rem 1.5rem 0.5rem;
+    border-radius: 8px;
 }
 
 /* Score Counter */
 .comment__score {
-    /* Voting column layout */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.125rem;
+    font-weight: var(--fw-medium);
+    color: var(--purple-600);
+    background-color: var(--grey-50);
+    padding: 0.75rem;
+    border-radius: 8px;
 }
 
 .comment__score-btn {
@@ -131,15 +153,28 @@ Comment Card Component
 }
 
 .comment__header {
-    /* User info and action buttons layout */
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .comment__user {
-    /* Avatar, username, date alignment */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+}
+
+.comment__user img {
+    width: 2rem;
+    height: 2rem;
+    object-fit: cover;
 }
 
 .comment__username {
-    /* Font weight, color */
+    font-weight: var(--fw-bold);
+    color: var(--grey-800);
 }
 
 .comment__badge {
@@ -164,7 +199,13 @@ Comment Card Component
 }
 
 .comment__action--reply {
-    /* Reply button color/hover */
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    color: var(--purple-600);
+    font-weight: var(--fw-bold);
 }
 
 .comment__action--delete {
@@ -177,7 +218,7 @@ Comment Card Component
 
 /* Comment Body Text */
 .comment__text {
-    /* Comment body text styling */
+   
 }
 
 .comment__replying-to {
