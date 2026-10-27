@@ -29,14 +29,6 @@ Import Font & CSS Variables
     --fw-bold: 700;
 }
 
-body {
-    font-family: var(--font-family);
-    font-size: var(--font-size-base);
-    font-weight: var(--fw-regular);
-    background-color: var(--grey-50);
-    color: var(--grey-500);
-}
-
 /* Reset */
 html,
 body {
@@ -78,8 +70,16 @@ picture {
 }
 
 /* ==========================================
- Main Layout & Containers
+Main Layout & Containers
    ================================          */
+body {
+    font-family: var(--font-family);
+    font-size: var(--fs-base);
+    font-weight: var(--fw-regular);
+    background-color: var(--grey-50);
+    color: var(--grey-500);
+}
+
 .comments {
     /* Main wrapper styles */
 }
