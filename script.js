@@ -10,6 +10,17 @@ const commentFormEl = document.getElementById('comment-form');
 const commentInputEl = document.getElementById('comment-input');
 const currentUserAvatarEl = document.getElementById('current-user-avatar');
 
+// ==========================================
+// Utility Functions
+// ==========================================
+
+// Automatically insert a zero-width space after any slash so compound 
+// words (like library/framework) wrap cleanly across browsers
+function makeSlashesWrappable(text) {
+    if (!text) return '';
+    return text.replace(/\//g, '/\u200B');
+}
+
 // 1. Fetch data from data.json on page load
 async function initComments() {
     try {
@@ -93,10 +104,10 @@ function createCommentElement(comment) {
             </div>
         </header>
 
-        <!-- Main Body Text -->
+        <!-- Main Body Text (Wrapped with makeSlashesWrappable) -->
         <p class="comment__text">
             ${comment.replyingTo ? `<span class="comment__replying-to">@${comment.replyingTo}</span> ` : ''}
-            ${comment.content}
+            ${makeSlashesWrappable(comment.content)}
         </p>
         </div>
     </article>
