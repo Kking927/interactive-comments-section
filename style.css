@@ -20,16 +20,17 @@ Import Font & CSS Variables
     /* Typography */
     --font-family: 'Rubik', sans-serif;
 
-    /*Font Sizes */
-    --fs-base: 1rem; /* 16px */
-    --fs-sm: 0.8125rem; /* 13px */
+    /* Font Sizes */
+    --fs-sm: clamp(0.75rem, 0.7rem + 0.25vw, 0.8125rem);      /* Scales 12px -> 13px */
+    --fs-base: clamp(0.875rem, 0.8rem + 0.4vw, 1rem);          /* Scales 14px -> 16px */
+    --fs-action: clamp(0.9375rem, 0.88rem + 0.4vw, 1.0625rem);  /* Scales 15px -> 17px */
 
     /* Font Weights */
     --fw-regular: 400;
     --fw-medium: 500;
     --fw-bold: 700;
 
-   /* Spacing Scale (Fluid Clamp Values) */
+   /* Spacing Scale */
     --xs-gap: clamp(0.25rem, 0.5vw, 0.375rem); /* ~4px to 6px */
     --small-gap: clamp(0.375rem, 1vw, 0.5rem); /* ~6px to 8px */
     --base-gap: clamp(0.75rem, 1.5vw, 1rem); /* ~12px to 16px */
@@ -37,9 +38,25 @@ Import Font & CSS Variables
     --comments-gap: clamp(0.875rem, 2vw, 1.125rem); /* ~14px to 18px */
 
     /* Component Spacing */
-    --card-padding: clamp(1rem, 2.5vw, 1.5rem);
     --score-gap: clamp(0.75rem, 2vw, 1.0625rem); /* 17px */
     --reply-indent: clamp(1rem, 4vw, 2.75rem);
+
+    /* Component Width */
+    --container-max-width: 47.625rem;
+    --score-width: clamp(2.375rem, 2.2rem + 0.5vw, 2.5rem);
+
+    /* Component Margin */
+    --container-margin: clamp(1.375rem, 4vw, 4rem) auto;
+    --form-margin-top: clamp(0rem, 0.05rem + 0.2vw, 0.125rem);
+
+    /* Component Padding */
+    --container-padding: 0 clamp(0.5rem, 2vw, 1rem);
+    --card-padding: clamp(1rem, 2.5vw, 1.5rem);
+    --score-padding: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem) clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem) clamp(0.75rem, 0.65rem + 0.5vw, 1rem);
+    --form-padding: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+    --form-avatar-margin-top: clamp(0.125rem, 0.1rem + 0.2vw, 0.25rem);
+    --form-input-padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(1rem, 3vw, 1.5rem);
+    --form-button-padding: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem) clamp(1rem, 0.75rem + 1.2vw, 1.875rem);
 
     /* Border Radii */
     --radius-xs: 2px; /* For badges */
@@ -94,7 +111,7 @@ textarea {
 }
 
 /* ==========================================
-Main Layout & Containers
+Main Layout & Containers (Mobile Base)
    ================================          */
 body {
     font-family: var(--font-family);
@@ -109,9 +126,9 @@ body {
 
 .comments__container {
     width: 100%;
-    max-width: 47.625rem;
-    margin: clamp(1.375rem, 4vw, 4rem) auto;
-    padding: 0 clamp(0.5rem, 2vw, 1rem);
+    max-width: var(--container-max-width);
+    margin: var(--container-margin);
+    padding: var(--container-padding);
 }
 
 .comments__list {
@@ -129,29 +146,37 @@ body {
 }
 
 /* ==========================================
-Comment Card Component
+Comment Card Component (Mobile Base: Grid)
    ================================          */
 .comment {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: flex-start;
-    gap: var(--large-gap);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+        "header header"
+        "content content"
+        "score actions";
+    gap: var(--base-gap);
     background-color: var(--white);
     padding: var(--card-padding);
     border-radius: var(--radius-md);
     margin-block-end: var(--comments-gap);
 }
 
-/* Score Counter */
+.comment :last-child {
+    margin-block-end: 0;
+}
+
+/* Score Counter (Mobile Base: Horizontal layout) */
 .comment__score {
+    grid-area: score;
+    justify-self: start;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
     gap: var(--score-gap);
     background-color: var(--grey-50);
-    padding: 0.75rem 0.75rem 1rem;
+    padding: var(--score-padding);
     border-radius: var(--radius-md);
     flex-shrink: 0;
 }
@@ -190,6 +215,7 @@ Comment Card Component
 }
 
 .comment__content {
+    grid-area: content;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
@@ -198,6 +224,7 @@ Comment Card Component
 }
 
 .comment__header {
+    grid-area: header;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -226,9 +253,8 @@ Comment Card Component
 }
 
 .comment__username {
-    font-weight: var(--fw-bold);
+    font-weight: var(--fw-medium);
     color: var(--grey-800);
-    letter-spacing: -0.01em;
 }
 
 .comment__badge {
@@ -245,48 +271,47 @@ Comment Card Component
 }
 
 .comment__actions {
+    grid-area: actions;
+    justify-self: end;
     display: flex;
     align-items: center;
     gap: var(--large-gap);
+    font-weight: var(--fw-medium);
+    font-size: var(--fs-action);
 }
 
 .comment__action {
     display: flex;
     align-items: center;
     gap: var(--small-gap);
-    font-weight: var(--fw-bold);
     background: none;
     border: none;
     cursor: pointer;
     padding: 0;
-    transition: opacity 0.2s ease;
+    transition: color 0.2s ease;
 }
 
-.comment__action:hover {
-    opacity: 0.5;
-}
-
-.comment__action--reply {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: var(--small-gap);
-    color: var(--purple-600);
-    font-weight: var(--fw-bold);
-}
-
+.comment__action--reply,
 .comment__action--edit {
     color: var(--purple-600);
+}
+
+.comment__action--reply:hover,
+.comment__action--edit:hover {
+    color: var(--purple-200);
 }
 
 .comment__action--delete {
     color: var(--pink-400);
 }
 
+.comment__action--delete:hover {
+    color: var(--pink-200);
+}
+
 .comment__text {
     margin: 0;
     color: var(--grey-500);
-    overflow-wrap: anywhere;
 }
 
 .comment__replying-to {
@@ -295,7 +320,7 @@ Comment Card Component
 }
 
 /* ==========================================
-Nested Replies
+Nested Replies (Mobile Base)
    ================================          */
 .comment__replies {
     position: relative;
@@ -322,28 +347,34 @@ Nested Replies
 }
 
 /* ==========================================
-Add Comment Form
+Add Comment Form (Mobile Base: Grid)
    ================================          */
 .comment__form {
     background-color: var(--white);
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+        "input input"
+        "avatar button";
     gap: var(--base-gap);
-    align-items: flex-start;
-    padding: 1.5rem;
+    align-items: center;
+    padding: var(--form-padding);
     border-radius: var(--radius-md);
-    margin-block-start: 0.125rem;
+    margin-block-start: var(--form-margin-top);
 }
 
 .comment__form-avatar {
+    grid-area: avatar;
     width: 2.5rem;
     height: 2.5rem;
     object-fit: cover;
-    margin-block-start: 0.25rem;
+    margin-block-start: var(--form-avatar-margin-top);
 }
 
 .comment__form-input {
+    grid-area: input;
     flex-grow: 1;
-    padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(1rem, 3vw, 1.5rem);
+    padding: var(--form-input-padding);
     border: 1px solid var(--grey-100);
     border-radius: var(--radius-md);
     resize: none;
@@ -358,11 +389,13 @@ Add Comment Form
 }
 
 .comment__form-button {
+    grid-area: button;
+    justify-self: end;
     text-transform: uppercase;
     background-color: var(--purple-600);
     color: var(--white);
     font-weight: var(--fw-medium);
-    padding: 0.75rem 1.875rem;
+    padding: var(--form-button-padding);
     border: none;
     border-radius: var(--radius-md);
     cursor: pointer;
@@ -377,25 +410,59 @@ Add Comment Form
 Media Queries / Responsive Design
    ================================          */
 
-/* Small devices / Tablets (768px and up) */
+/* Small devices / Tablets & Desktops (768px and up) */
 @media screen and (min-width: 48rem) {
-    /* Add tablet-specific styles here */
+    /* Switch Comment Card from mobile grid to desktop flex layout */
+    .comment {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        gap: var(--large-gap);
+    }
+
+    /* Score Counter: Switch to vertical layout with explicit desktop width */
+    .comment__score {
+        grid-area: unset;
+        justify-self: unset;
+        flex-direction: column;
+        width: var(--score-width);
+    }
+
+    .comment__actions {
+        grid-area: unset;
+        justify-self: unset;
+    }
+
+    /* Switch Add Comment Form from mobile grid to desktop flex layout */
+    .comment__form {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    .comment__form-avatar {
+        grid-area: unset;
+    }
+
+    .comment__form-input {
+        grid-area: unset;
+    }
+
+    .comment__form-button {
+        grid-area: unset;
+        justify-self: unset;
+    }
 }
 
 /* Large devices / Desktops (1024px and up) */
 @media screen and (min-width: 64rem) {
-    .comment__score {
-        flex-direction: column;
-        width: 2.5rem; /* Restores the fixed width on larger screens */
-        padding: 0.75rem 0.75rem 1rem;
-    }
+    /* Additional desktop tweaks can go here if needed */
 }
 
 /* ==========================================
 Accessibility: Reduced Motion
    ================================          */
 @media (prefers-reduced-motion: reduce) {
-
     *,
     *::before,
     *::after {
