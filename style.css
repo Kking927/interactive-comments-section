@@ -190,7 +190,8 @@ Comment Card Component (Mobile Base: Grid)
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: opacity 0.2s ease;
+    color: var(--purple-200);
+    transition: color 0.2s ease;
 }
 
 /* Expand the click area */
@@ -203,10 +204,9 @@ Comment Card Component (Mobile Base: Grid)
     right: -8px;
 }
 
-/* Darken the SVG + - button images on hover/focus */
-.comment__score-btn:hover img,
-.comment__score-btn:focus-visible img {
-    filter: brightness(0.3);
+.comment__score-btn:hover,
+.comment__score-btn:focus-visible {
+    color: var(--purple-600);
 }
 
 .comment__score-number {
@@ -405,6 +405,93 @@ Add Comment Form (Mobile Base: Grid)
 .comment__form-button:hover {
     background-color: var(--purple-200);
 }
+
+/* ========================================== */
+/* Delete Confirmation Modal Styles           */
+/* ========================================== */
+.modal-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal-wrapper.invisible {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.modal {
+    background-color: var(--white);
+    width: 90%;
+    max-width: 25rem;
+    padding: var(--card-padding);
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: var(--base-gap);
+}
+
+.modal h3 {
+    color: var(--grey-800);
+    font-size: var(--fs-action);
+    font-weight: var(--fw-bold);
+    margin: 0;
+}
+
+.modal p {
+    color: var(--grey-500);
+    font-size: var(--fs-base);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.modal__buttons {
+    display: flex;
+    gap: var(--base-gap);
+    margin-top: var(--xs-gap);
+}
+
+.modal__buttons button {
+    flex: 1;
+    padding: var(--form-button-padding);
+    border: none;
+    border-radius: var(--radius-md);
+    font-weight: var(--fw-medium);
+    font-size: var(--fs-base);
+    cursor: pointer;
+    text-transform: uppercase;
+    color: var(--white);
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+#cancel-delete-btn {
+    background-color: var(--grey-500);
+}
+
+#cancel-delete-btn:hover {
+    background-color: var(--grey-800);
+}
+
+#confirm-delete-btn {
+    background-color: var(--pink-400);
+}
+
+#confirm-delete-btn:hover {
+    background-color: var(--pink-200);
+}
+
 
 /* ==========================================
 Media Queries / Responsive Design
