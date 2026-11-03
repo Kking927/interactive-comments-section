@@ -45,7 +45,7 @@ function nestComments(flatComments) {
     const roots = [];
     
     flatComments.forEach(comment => {
-        map[comment.id] = { ...comment, replies: [], userVote: 0 };
+        map[comment.id] = { ...comment, replies: [] };
     });
     
     flatComments.forEach(comment => {
@@ -73,21 +73,47 @@ function findCommentById(comments, id) {
     return null;
 }
 
-// 1. Fetch data from Supabase on page load
+// ==========================================
+// Initialization & Fetching Data
+// ==========================================
+
+// 1. Fetch comments and user votes from Supabase on page load
 async function initComments() {
     try {
-        console.log("Fetching comments from Supabase...");
-        const { data, error } = await supabase
+        console.log("Fetching comments and votes from Supabase...");
+        
+        // Fetch comments
+        const { data: commentsData, error: commentsError } = await supabase
             .from('Interactive Comments Section')
             .select('*')
             .order('created_at', { ascending: true });
 
-        if (error) throw error;
+        if (commentsError) throw commentsError;
 
-        console.log("Data received from Supabase:", data);
+        // Fetch current user's votes from the votes table
+        const { data: votesData, error: votesError } = await supabase
+            .from('votes')
+            .select('*')
+            .eq('username', commentData.currentUser.username);
+
+        if (votesError) throw votesError;
+
+        // Map votes into a lookup object: { [comment_id]: vote_type }
+        const userVotesMap = {};
+        if (votesData) {
+            votesData.forEach(vote => {
+                userVotesMap[vote.comment_id] = vote.vote_type;
+            });
+        }
+
+        // Attach userVote state to each comment object
+        const flatCommentsWithVotes = (commentsData || []).map(comment => ({
+            ...comment,
+            userVote: userVotesMap[comment.id] || 0
+        }));
 
         // Convert flat rows into nested tree structure
-        commentData.comments = nestComments(data || []);
+        commentData.comments = nestComments(flatCommentsWithVotes);
 
         // Set current user avatar in the bottom posting form
         if (currentUserAvatarEl && commentData.currentUser.image) {
@@ -216,7 +242,6 @@ if (commentFormEl) {
         const content = commentInputEl.value.trim();
         if (!content) return;
 
-        // Prepare the new comment payload matching your Supabase columns
         const newComment = {
             content: content,
             score: 0,
@@ -227,17 +252,13 @@ if (commentFormEl) {
         };
 
         try {
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from('Interactive Comments Section')
-                .insert([newComment])
-                .select();
+                .insert([newComment]);
 
             if (error) throw error;
 
-            // Clear input box
             commentInputEl.value = '';
-
-            // Refresh comments list from Supabase
             await initComments();
         } catch (error) {
             console.error('Error posting comment to Supabase:', error);
@@ -247,7 +268,7 @@ if (commentFormEl) {
 }
 
 // ==========================================
-// Upvote / Downvote Logic
+// Upvote / Downvote Logic (Persistent via votes table)
 // ==========================================
 if (commentsListEl) {
     commentsListEl.addEventListener('click', async (e) => {
@@ -261,55 +282,74 @@ if (commentsListEl) {
         const isUpvote = scoreBtn.classList.contains('comment__score-btn--plus');
         const scoreNumberEl = commentItem.querySelector('.comment__score-number');
 
-        // Find the comment object in our global commentData tree
         const commentObj = findCommentById(commentData.comments, commentId);
         if (!commentObj) return;
 
         let currentScore = commentObj.score;
         let currentVote = commentObj.userVote;
         let scoreChange = 0;
+        let newVoteType = 0;
 
-        // Calculate vote toggle and score change
         if (isUpvote) {
             if (currentVote === 1) {
                 scoreChange = -1;
-                commentObj.userVote = 0;
+                newVoteType = 0;
             } else if (currentVote === -1) {
                 scoreChange = 2;
-                commentObj.userVote = 1;
+                newVoteType = 1;
             } else {
                 scoreChange = 1;
-                commentObj.userVote = 1;
+                newVoteType = 1;
             }
         } else {
             if (currentVote === -1) {
                 scoreChange = 1;
-                commentObj.userVote = 0;
+                newVoteType = 0;
             } else if (currentVote === 1) {
                 scoreChange = -2;
-                commentObj.userVote = -1;
+                newVoteType = -1;
             } else {
                 scoreChange = -1;
-                commentObj.userVote = -1;
+                newVoteType = -1;
             }
         }
 
         const newScore = currentScore + scoreChange;
 
         try {
-            const { error } = await supabase
+            // 1. Update the votes table (upsert or delete record)
+            if (newVoteType === 0) {
+                const { error: deleteError } = await supabase
+                    .from('votes')
+                    .delete()
+                    .match({ comment_id: commentId, username: commentData.currentUser.username });
+                if (deleteError) throw deleteError;
+            } else {
+                const { error: upsertError } = await supabase
+                    .from('votes')
+                    .upsert({
+                        comment_id: commentId,
+                        username: commentData.currentUser.username,
+                        vote_type: newVoteType
+                    }, { onConflict: 'comment_id, username' });
+                if (upsertError) throw upsertError;
+            }
+
+            // 2. Update the comment's total score in the main table
+            const { error: scoreError } = await supabase
                 .from('Interactive Comments Section')
                 .update({ score: newScore })
                 .eq('id', commentId);
 
-            if (error) throw error;
+            if (scoreError) throw scoreError;
 
             // Update local object and UI
             commentObj.score = newScore;
+            commentObj.userVote = newVoteType;
             scoreNumberEl.textContent = newScore;
         } catch (error) {
-            console.error('Error updating score in Supabase:', error);
-            alert('Failed to update score. Check console for details.');
+            console.error('Error updating vote in Supabase:', error);
+            alert('Failed to update vote. Check console for details.');
         }
     });
 }
@@ -325,18 +365,15 @@ if (commentsListEl) {
         const commentItem = replyBtn.closest('.comments__item');
         if (!commentItem) return;
 
-        // Check if a reply form already exists inside this comment item to avoid duplicates
         const existingReplyForm = commentItem.querySelector('.reply-form-container');
         if (existingReplyForm) {
-            existingReplyForm.remove(); // Toggle it closed if clicked again
+            existingReplyForm.remove();
             return;
         }
 
-        // Get the username of the person being replied to
         const usernameEl = commentItem.querySelector('.comment__username');
         const replyingToUser = usernameEl ? usernameEl.textContent : '';
 
-        // Create the reply form container element
         const replyFormDiv = document.createElement('div');
         replyFormDiv.classList.add('reply-form-container');
         
@@ -348,13 +385,45 @@ if (commentsListEl) {
             </form>
         `;
 
-        // Append the form right below the comment article/content
-        commentItem.appendChild(replyFormDiv);
+        const commentArticle = commentItem.querySelector('.comment');
+        commentArticle.after(replyFormDiv);
 
-        // Focus the textarea and place the cursor at the very end of "@username "
         const textarea = replyFormDiv.querySelector('textarea');
         textarea.focus();
         textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+
+        // Reply Form Submission Listener
+        const replyForm = replyFormDiv.querySelector('.reply-form');
+        replyForm.addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            const content = textarea.value.trim();
+            if (!content) return;
+
+            const parentId = commentItem.dataset.id;
+
+            const newReply = {
+                content: content,
+                score: 0,
+                username: commentData.currentUser.username,
+                user_image: commentData.currentUser.image.png,
+                replying_to: replyingToUser,
+                parent_id: parentId
+            };
+
+            try {
+                const { error } = await supabase
+                    .from('Interactive Comments Section')
+                    .insert([newReply]);
+
+                if (error) throw error;
+
+                replyFormDiv.remove();
+                await initComments();
+            } catch (error) {
+                console.error('Error posting reply to Supabase:', error);
+                alert('Failed to post reply. Check console for details.');
+            }
+        });
     });
 }
 
@@ -373,23 +442,19 @@ document.addEventListener('click', (event) => {
 // Delete Modal & Actions Logic
 // ==========================================
 
-// 1. Listen for clicks inside the comments list (Delegation for Delete buttons)
 if (commentsListEl) {
     commentsListEl.addEventListener('click', (e) => {
         const deleteBtn = e.target.closest('.comment__action--delete');
         if (!deleteBtn) return;
 
-        // Find the parent comment item that holds the data-id attribute
         const commentItem = deleteBtn.closest('.comments__item');
         if (commentItem) {
             commentToDeleteId = commentItem.dataset.id;
-            // Show the modal by removing the 'invisible' class
             deleteModalEl.classList.remove('invisible');
         }
     });
 }
 
-// 2. Cancel Button: Hide modal and clear stored ID
 if (cancelDeleteBtn) {
     cancelDeleteBtn.addEventListener('click', () => {
         deleteModalEl.classList.add('invisible');
@@ -397,7 +462,6 @@ if (cancelDeleteBtn) {
     });
 }
 
-// 3. Confirm Delete Button: Execute Supabase Delete query
 if (confirmDeleteBtn) {
     confirmDeleteBtn.addEventListener('click', async () => {
         if (!commentToDeleteId) return;
@@ -410,7 +474,6 @@ if (confirmDeleteBtn) {
 
             if (error) throw error;
 
-            // Hide modal and refresh comments list
             deleteModalEl.classList.add('invisible');
             commentToDeleteId = null;
             await initComments();
@@ -435,18 +498,14 @@ if (commentsListEl) {
         const commentContentEl = commentItem.querySelector('.comment__content');
         const commentTextP = commentItem.querySelector('.comment__text');
 
-        // Prevent opening multiple edit forms on the same comment
         if (commentContentEl.querySelector('.edit-form-container')) return;
 
-        // Find the comment object to get its raw content
         const commentId = commentItem.dataset.id;
         const commentObj = findCommentById(commentData.comments, commentId);
         if (!commentObj) return;
 
-        // Hide the original text paragraph while editing
         commentTextP.style.display = 'none';
 
-        // Create the edit form container
         const editFormDiv = document.createElement('div');
         editFormDiv.classList.add('edit-form-container');
         editFormDiv.style.marginTop = '0.5rem';
@@ -461,26 +520,21 @@ if (commentsListEl) {
             </form>
         `;
 
-        // Append the edit form to the comment content area
         commentContentEl.appendChild(editFormDiv);
 
-        // Fix initial text area height
         const textarea = editFormDiv.querySelector('textarea');
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + 'px';
 
-        // Focus the textarea and place cursor at the end of the text
         textarea.focus();
         textarea.setSelectionRange(textarea.value.length, textarea.value.length);
 
-        // Handle Cancel action
         const cancelBtn = editFormDiv.querySelector('.edit-form__btn--cancel');
         cancelBtn.addEventListener('click', () => {
             editFormDiv.remove();
-            commentTextP.style.display = ''; // Restore original text
+            commentTextP.style.display = '';
         });
 
-        // Handle Submit (Update) action
         const editForm = editFormDiv.querySelector('.edit-form');
         editForm.addEventListener('submit', async (ev) => {
             ev.preventDefault();
@@ -495,7 +549,6 @@ if (commentsListEl) {
 
                 if (error) throw error;
 
-                // Clean up and refresh comments list from Supabase
                 editFormDiv.remove();
                 commentTextP.style.display = '';
                 await initComments();

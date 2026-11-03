@@ -21,24 +21,33 @@ Import Font & CSS Variables
     --font-family: 'Rubik', sans-serif;
 
     /* Font Sizes */
-    --fs-sm: clamp(0.75rem, 0.7rem + 0.25vw, 0.8125rem);      /* Scales 12px -> 13px */
-    --fs-base: clamp(0.875rem, 0.8rem + 0.4vw, 1rem);          /* Scales 14px -> 16px */
-    --fs-action: clamp(0.9375rem, 0.88rem + 0.4vw, 1.0625rem);  /* Scales 15px -> 17px */
+    --fs-sm: clamp(0.75rem, 0.7rem + 0.25vw, 0.8125rem);
+    /* Scales 12px -> 13px */
+    --fs-base: clamp(0.875rem, 0.8rem + 0.4vw, 1rem);
+    /* Scales 14px -> 16px */
+    --fs-action: clamp(0.9375rem, 0.88rem + 0.4vw, 1.0625rem);
+    /* Scales 15px -> 17px */
 
     /* Font Weights */
     --fw-regular: 400;
     --fw-medium: 500;
     --fw-bold: 700;
 
-   /* Spacing Scale */
-    --xs-gap: clamp(0.25rem, 0.5vw, 0.375rem); /* ~4px to 6px */
-    --small-gap: clamp(0.375rem, 1vw, 0.5rem); /* ~6px to 8px */
-    --base-gap: clamp(0.75rem, 1.5vw, 1rem); /* ~12px to 16px */
-    --large-gap: clamp(1rem, 2.5vw, 1.5rem); /* ~16px to 24px */
-    --comments-gap: clamp(0.875rem, 2vw, 1.125rem); /* ~14px to 18px */
+    /* Spacing Scale */
+    --xs-gap: clamp(0.25rem, 0.5vw, 0.375rem);
+    /* ~4px to 6px */
+    --small-gap: clamp(0.375rem, 1vw, 0.5rem);
+    /* ~6px to 8px */
+    --base-gap: clamp(0.75rem, 1.5vw, 1rem);
+    /* ~12px to 16px */
+    --large-gap: clamp(1rem, 2.5vw, 1.5rem);
+    /* ~16px to 24px */
+    --comments-gap: clamp(0.875rem, 2vw, 1.125rem);
+    /* ~14px to 18px */
 
     /* Component Spacing */
-    --score-gap: clamp(0.75rem, 2vw, 1.0625rem); /* 17px */
+    --score-gap: clamp(0.75rem, 2vw, 1.0625rem);
+    /* 17px */
     --reply-indent: clamp(1rem, 4vw, 2.75rem);
 
     /* Reply Form Spacing (Fluid Clamps) */
@@ -65,7 +74,8 @@ Import Font & CSS Variables
     --form-button-padding: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem) clamp(1rem, 0.75rem + 1.2vw, 1.875rem);
 
     /* Border Radii */
-    --radius-xs: 2px; /* For badges */
+    --radius-xs: 2px;
+    /* For badges */
     --radius-md: 8px;
 
     /* Modals, Overlays & Shadows */
@@ -263,7 +273,7 @@ Comment Card Component
 .comment__user-details {
     display: flex;
     align-items: center;
-    gap: var(--small-gap); 
+    gap: var(--small-gap);
 }
 
 .comment__username {
@@ -355,7 +365,7 @@ Nested Replies
 .comments__list--nested {
     display: flex;
     flex-direction: column;
-    gap: var(--xs-gap); 
+    gap: var(--xs-gap);
 }
 
 /* ==========================================
@@ -370,19 +380,25 @@ Nested Replies
 }
 
 .reply-form {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+        "input input"
+        "avatar button";
     gap: var(--base-gap);
-    align-items: flex-start;
+    align-items: center;
 }
 
 .reply-form__avatar {
+    grid-area: avatar;
     width: 2.5rem;
     height: 2.5rem;
+    object-fit: cover;
     margin-block-start: var(--form-avatar-margin-top);
 }
 
 .reply-form__input {
+    grid-area: input;
     flex: 1;
     min-width: 70%;
     min-height: 6rem;
@@ -401,6 +417,8 @@ Nested Replies
 }
 
 .reply-form__btn {
+    grid-area: button;
+    justify-self: end;
     background-color: var(--purple-600);
     color: var(--white);
     border: none;
@@ -410,7 +428,6 @@ Nested Replies
     text-transform: uppercase;
     cursor: pointer;
     transition: background-color 0.2s ease;
-    align-self: flex-end;
 }
 
 .reply-form__btn:hover {
@@ -585,21 +602,25 @@ Media Queries / Responsive Design
         justify-self: unset;
     }
 
-    .comment__form {
+    .comment__form,
+    .reply-form {
         display: flex;
         flex-direction: row;
         align-items: flex-start;
     }
 
-    .comment__form-avatar {
+    .comment__form-avatar,
+    .reply-form__avatar {
         grid-area: unset;
     }
 
-    .comment__form-input {
+    .comment__form-input,
+    .reply-form__input {
         grid-area: unset;
     }
 
-    .comment__form-button {
+    .comment__form-button,
+    .reply-form__btn {
         grid-area: unset;
         justify-self: unset;
     }
@@ -609,6 +630,7 @@ Media Queries / Responsive Design
 Accessibility: Reduced Motion
    ================================          */
 @media (prefers-reduced-motion: reduce) {
+
     *,
     *::before,
     *::after {
