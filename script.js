@@ -45,7 +45,7 @@ function nestComments(flatComments) {
     const roots = [];
     
     flatComments.forEach(comment => {
-        map[comment.id] = { ...comment, replies: [] };
+        map[comment.id] = { ...comment, replies: [], userVote: 0 };
     });
     
     flatComments.forEach(comment => {
@@ -59,6 +59,18 @@ function nestComments(flatComments) {
     });
     
     return roots;
+}
+
+// Helper to find a comment or reply by its ID in the nested tree
+function findCommentById(comments, id) {
+    for (const comment of comments) {
+        if (comment.id == id) return comment;
+        if (comment.replies && comment.replies.length > 0) {
+            const found = findCommentById(comment.replies, id);
+            if (found) return found;
+        }
+    }
+    return null;
 }
 
 // 1. Fetch data from Supabase on page load
@@ -235,6 +247,129 @@ if (commentFormEl) {
 }
 
 // ==========================================
+// Upvote / Downvote Logic
+// ==========================================
+if (commentsListEl) {
+    commentsListEl.addEventListener('click', async (e) => {
+        const scoreBtn = e.target.closest('.comment__score-btn');
+        if (!scoreBtn) return;
+
+        const commentItem = scoreBtn.closest('.comments__item');
+        if (!commentItem) return;
+
+        const commentId = commentItem.dataset.id;
+        const isUpvote = scoreBtn.classList.contains('comment__score-btn--plus');
+        const scoreNumberEl = commentItem.querySelector('.comment__score-number');
+
+        // Find the comment object in our global commentData tree
+        const commentObj = findCommentById(commentData.comments, commentId);
+        if (!commentObj) return;
+
+        let currentScore = commentObj.score;
+        let currentVote = commentObj.userVote;
+        let scoreChange = 0;
+
+        // Calculate vote toggle and score change
+        if (isUpvote) {
+            if (currentVote === 1) {
+                scoreChange = -1;
+                commentObj.userVote = 0;
+            } else if (currentVote === -1) {
+                scoreChange = 2;
+                commentObj.userVote = 1;
+            } else {
+                scoreChange = 1;
+                commentObj.userVote = 1;
+            }
+        } else {
+            if (currentVote === -1) {
+                scoreChange = 1;
+                commentObj.userVote = 0;
+            } else if (currentVote === 1) {
+                scoreChange = -2;
+                commentObj.userVote = -1;
+            } else {
+                scoreChange = -1;
+                commentObj.userVote = -1;
+            }
+        }
+
+        const newScore = currentScore + scoreChange;
+
+        try {
+            const { error } = await supabase
+                .from('Interactive Comments Section')
+                .update({ score: newScore })
+                .eq('id', commentId);
+
+            if (error) throw error;
+
+            // Update local object and UI
+            commentObj.score = newScore;
+            scoreNumberEl.textContent = newScore;
+        } catch (error) {
+            console.error('Error updating score in Supabase:', error);
+            alert('Failed to update score. Check console for details.');
+        }
+    });
+}
+
+// ==========================================
+// Reply Form Toggle Logic
+// ==========================================
+if (commentsListEl) {
+    commentsListEl.addEventListener('click', (e) => {
+        const replyBtn = e.target.closest('.comment__action--reply');
+        if (!replyBtn) return;
+
+        const commentItem = replyBtn.closest('.comments__item');
+        if (!commentItem) return;
+
+        // Check if a reply form already exists inside this comment item to avoid duplicates
+        const existingReplyForm = commentItem.querySelector('.reply-form-container');
+        if (existingReplyForm) {
+            existingReplyForm.remove(); // Toggle it closed if clicked again
+            return;
+        }
+
+        // Get the username of the person being replied to
+        const usernameEl = commentItem.querySelector('.comment__username');
+        const replyingToUser = usernameEl ? usernameEl.textContent : '';
+
+        // Create the reply form container element
+        const replyFormDiv = document.createElement('div');
+        replyFormDiv.classList.add('reply-form-container');
+        
+        replyFormDiv.innerHTML = `
+            <form class="reply-form" id="reply-form">
+                <img src="${commentData.currentUser.image.png}" alt="${commentData.currentUser.username}" class="reply-form__avatar" />
+                <textarea class="reply-form__input" placeholder="Write a reply..." required>@${replyingToUser} </textarea>
+                <button type="submit" class="reply-form__btn">Reply</button>
+            </form>
+        `;
+
+        // Append the form right below the comment article/content
+        commentItem.appendChild(replyFormDiv);
+
+        // Focus the textarea and place the cursor at the very end of "@username "
+        const textarea = replyFormDiv.querySelector('textarea');
+        textarea.focus();
+        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    });
+}
+
+// ==========================================
+// Click-Outside Dismissal for Reply Form
+// ==========================================
+document.addEventListener('click', (event) => {
+    const activeReplyForm = document.querySelector('.reply-form-container');
+    
+    if (activeReplyForm && !activeReplyForm.contains(event.target) && !event.target.closest('.comment__action--reply')) {
+        activeReplyForm.remove();
+    }
+});
+
+// ==========================================
 // Delete Modal & Actions Logic
 // ==========================================
 
@@ -283,5 +418,91 @@ if (confirmDeleteBtn) {
             console.error('Error deleting comment from Supabase:', error);
             alert('Failed to delete comment. Check console for details.');
         }
+    });
+}
+
+// ==========================================
+// Edit Comment Logic
+// ==========================================
+if (commentsListEl) {
+    commentsListEl.addEventListener('click', (e) => {
+        const editBtn = e.target.closest('.comment__action--edit');
+        if (!editBtn) return;
+
+        const commentItem = editBtn.closest('.comments__item');
+        if (!commentItem) return;
+
+        const commentContentEl = commentItem.querySelector('.comment__content');
+        const commentTextP = commentItem.querySelector('.comment__text');
+
+        // Prevent opening multiple edit forms on the same comment
+        if (commentContentEl.querySelector('.edit-form-container')) return;
+
+        // Find the comment object to get its raw content
+        const commentId = commentItem.dataset.id;
+        const commentObj = findCommentById(commentData.comments, commentId);
+        if (!commentObj) return;
+
+        // Hide the original text paragraph while editing
+        commentTextP.style.display = 'none';
+
+        // Create the edit form container
+        const editFormDiv = document.createElement('div');
+        editFormDiv.classList.add('edit-form-container');
+        editFormDiv.style.marginTop = '0.5rem';
+
+        editFormDiv.innerHTML = `
+            <form class="edit-form">
+                <textarea class="comment__form-input edit-form__input" style="width: 100%; min-height: 5rem; resize: none;" required>${commentObj.content}</textarea>
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.75rem;">
+                    <button type="button" class="comment__form-button edit-form__btn--cancel" style="background-color: var(--grey-500);">Cancel</button>
+                    <button type="submit" class="comment__form-button">Update</button>
+                </div>
+            </form>
+        `;
+
+        // Append the edit form to the comment content area
+        commentContentEl.appendChild(editFormDiv);
+
+        // Fix initial text area height
+        const textarea = editFormDiv.querySelector('textarea');
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+
+        // Focus the textarea and place cursor at the end of the text
+        textarea.focus();
+        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+
+        // Handle Cancel action
+        const cancelBtn = editFormDiv.querySelector('.edit-form__btn--cancel');
+        cancelBtn.addEventListener('click', () => {
+            editFormDiv.remove();
+            commentTextP.style.display = ''; // Restore original text
+        });
+
+        // Handle Submit (Update) action
+        const editForm = editFormDiv.querySelector('.edit-form');
+        editForm.addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            const updatedContent = textarea.value.trim();
+            if (!updatedContent) return;
+
+            try {
+                const { error } = await supabase
+                    .from('Interactive Comments Section')
+                    .update({ content: updatedContent })
+                    .eq('id', commentId);
+
+                if (error) throw error;
+
+                // Clean up and refresh comments list from Supabase
+                editFormDiv.remove();
+                commentTextP.style.display = '';
+                await initComments();
+            } catch (error) {
+                console.error('Error updating comment in Supabase:', error);
+                alert('Failed to update comment. Check console for details.');
+            }
+        });
     });
 }
