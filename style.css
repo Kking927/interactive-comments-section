@@ -1,5 +1,5 @@
 /* ==========================================
-Import Font & CSS Variables
+Import Font & Variables
    ================================          */
 @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap');
 
@@ -588,7 +588,7 @@ Delete Confirmation Modal Styles
 /* ==========================================
 Media Queries
    ================================          */
-/* Small devices / Tablets & Desktops (768px and up) */
+/* Tablets & Desktops (768px and up) */
 @media screen and (min-width: 48rem) {
     .comment {
         position: static;
