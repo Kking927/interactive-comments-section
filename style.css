@@ -22,11 +22,9 @@ Import Font & CSS Variables
 
     /* Font Sizes */
     --fs-sm: clamp(0.75rem, 0.7rem + 0.25vw, 0.8125rem);
-    /* Scales 12px -> 13px */
     --fs-base: clamp(0.875rem, 0.8rem + 0.4vw, 1rem);
-    /* Scales 14px -> 16px */
     --fs-action: clamp(0.9375rem, 0.88rem + 0.4vw, 1.0625rem);
-    /* Scales 15px -> 17px */
+    --fs-modal-title: clamp(1.2rem, 1.25vw + 1rem, 1.5rem);
 
     /* Font Weights */
     --fw-regular: 400;
@@ -34,23 +32,18 @@ Import Font & CSS Variables
     --fw-bold: 700;
 
     /* Spacing Scale */
+    --xxs-gap: clamp(0.1875rem, 0.2vw + 0.15rem, 0.25rem);
     --xs-gap: clamp(0.25rem, 0.5vw, 0.375rem);
-    /* ~4px to 6px */
     --small-gap: clamp(0.375rem, 1vw, 0.5rem);
-    /* ~6px to 8px */
     --base-gap: clamp(0.75rem, 1.5vw, 1rem);
-    /* ~12px to 16px */
     --large-gap: clamp(1rem, 2.5vw, 1.5rem);
-    /* ~16px to 24px */
-    --comments-gap: clamp(0.875rem, 2vw, 1.125rem);
-    /* ~14px to 18px */
 
     /* Component Spacing */
+    --comments-gap: clamp(0.875rem, 2vw, 1.125rem);
     --score-gap: clamp(0.75rem, 2vw, 1.0625rem);
-    /* 17px */
     --reply-indent: clamp(1rem, 4vw, 2.75rem);
 
-    /* Reply Form Spacing (Fluid Clamps) */
+    /* Reply Form Spacing */
     --reply-margin-top: clamp(-1rem, 0.4vw, -0.6875rem);
     --reply-margin-bottom: clamp(0.75rem, 1vw, 1.25rem);
 
@@ -62,20 +55,34 @@ Import Font & CSS Variables
     --container-margin: clamp(1.375rem, 4vw, 4rem) auto;
     --form-margin-top: clamp(0rem, 0.05rem + 0.2vw, 0.125rem);
 
-    /* Component Padding */
+     /* Modal Margin */
+    --modal-margin-top: clamp(1rem, 1.5rem + 3vw, 5rem);
+
+    /* Container Padding */
     --container-padding: 0 clamp(0.5rem, 2vw, 1rem);
+
+    /* Card Padding */
     --card-padding: clamp(1rem, 2.5vw, 1.5rem);
     --score-padding-mobile: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem) clamp(0.875rem, 0.75rem + 0.5vw, 1rem);
     --score-padding: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem) clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem) clamp(0.75rem, 0.65rem + 0.5vw, 1rem);
+
+    /* Reply Button Padding */
     --reply-button-padding: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem) clamp(1rem, 0.75rem + 1.2vw, 1.675rem);
+
+    /* Form Padding */
     --form-padding: clamp(1rem, 0.8rem + 1vw, 1.5rem);
     --form-avatar-margin-top: clamp(0.125rem, 0.1rem + 0.2vw, 0.25rem);
     --form-input-padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(1rem, 3vw, 1.5rem);
     --form-button-padding: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem) clamp(1rem, 0.75rem + 1.2vw, 1.875rem);
 
+    /* Modal Padding */
+    --modal-padding: 
+        clamp(1rem, 1.2rem + 0.8vw, 1.75rem)
+        clamp(1.25rem, 1rem + 1.5vw, 2rem)
+        clamp(1.25rem, 1rem + 1.5vw, 2rem);
+
     /* Border Radii */
-    --radius-xs: 2px;
-    /* For badges */
+    --radius-xs: 2px; /* For badges */
     --radius-md: 8px;
 
     /* Modals, Overlays & Shadows */
@@ -520,18 +527,19 @@ Add Comment Form
     background-color: var(--white);
     width: 90%;
     max-width: 25rem;
-    padding: var(--card-padding);
+    padding: var(--modal-padding);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-modal);
     display: flex;
     flex-direction: column;
     gap: var(--base-gap);
+    margin-block-start: var(--modal-margin-top);
 }
 
 .modal h3 {
     color: var(--grey-800);
-    font-size: var(--fs-action);
-    font-weight: var(--fw-bold);
+    font-size: var(--fs-modal-title);
+    font-weight: var(--fw-medium);
     margin: 0;
 }
 
@@ -540,12 +548,12 @@ Add Comment Form
     font-size: var(--fs-base);
     line-height: 1.5;
     margin: 0;
+    margin-block-end: var(--xxs-gap);
 }
 
 .modal__buttons {
     display: flex;
     gap: var(--base-gap);
-    margin-block-start: var(--xs-gap);
 }
 
 .modal__buttons button {
@@ -630,7 +638,6 @@ Media Queries / Responsive Design
 Accessibility: Reduced Motion
    ================================          */
 @media (prefers-reduced-motion: reduce) {
-
     *,
     *::before,
     *::after {
