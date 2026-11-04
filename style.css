@@ -59,10 +59,10 @@ Import Font & CSS Variables
     --modal-margin-top: clamp(1rem, 1.5rem + 3vw, 5rem);
 
     /* Container Padding */
-    --container-padding: 0 clamp(0.5rem, 2vw, 1rem);
+    --container-padding: 0 clamp(1rem, 3vw, 1.5rem);
 
     /* Card Padding */
-    --card-padding: clamp(1rem, 2.5vw, 1.5rem);
+    --card-padding: clamp(1.25rem, 3vw, 1.5rem);
     --score-padding-mobile: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem) clamp(0.875rem, 0.75rem + 0.5vw, 1rem);
     --score-padding: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem) clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem) clamp(0.75rem, 0.65rem + 0.5vw, 1rem);
 
@@ -178,18 +178,16 @@ body {
 }
 
 /* ==========================================
-Comment Card Component
-   ================================          */
+Comment Card Component (Mobile Base)
+   ========================================== */
 .comment {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas:
-        "header header"
-        "content content"
-        "score actions";
+    position: relative;
+    display: flex;
+    flex-direction: column;
     gap: var(--base-gap);
     background-color: var(--white);
     padding: var(--card-padding);
+    padding-bottom: 4.5rem;
     border-radius: var(--radius-md);
     margin-block-end: var(--comments-gap);
 }
@@ -199,15 +197,17 @@ Comment Card Component
 }
 
 .comment__score {
-    grid-area: score;
-    justify-self: start;
+    position: absolute;
+    bottom: var(--card-padding);
+    left: var(--card-padding);
+    height: 2.5rem;
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
     gap: var(--score-gap);
     background-color: var(--grey-50);
-    padding: var(--score-padding-mobile);
+    padding: 0 0.875rem;
     border-radius: var(--radius-md);
     flex-shrink: 0;
 }
@@ -246,7 +246,6 @@ Comment Card Component
 }
 
 .comment__content {
-    grid-area: content;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
@@ -255,7 +254,6 @@ Comment Card Component
 }
 
 .comment__header {
-    grid-area: header;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -301,8 +299,10 @@ Comment Card Component
 }
 
 .comment__actions {
-    grid-area: actions;
-    justify-self: end;
+    position: absolute;
+    bottom: var(--card-padding);
+    right: var(--card-padding);
+    height: 2.5rem;
     display: flex;
     align-items: center;
     gap: var(--large-gap);
@@ -340,7 +340,7 @@ Comment Card Component
 }
 
 .comment__text {
-    margin: 0;
+    margin: 0 auto;
     color: var(--grey-500);
 }
 
@@ -376,8 +376,8 @@ Nested Replies
 }
 
 /* ==========================================
-// Reply Form Styles
-// ========================================== */
+Reply Form Styles
+   ========================================== */
 .reply-form-container {
     margin-block-start: var(--reply-margin-top);
     margin-block-end: var(--reply-margin-bottom);
@@ -501,9 +501,9 @@ Add Comment Form
     background-color: var(--purple-200);
 }
 
-/* ========================================== */
-/* Delete Confirmation Modal Styles           */
-/* ========================================== */
+/* ==========================================
+Delete Confirmation Modal Styles    
+  ========================================== */
 .modal-wrapper {
     position: fixed;
     inset: 0;
@@ -586,28 +586,30 @@ Add Comment Form
 }
 
 /* ==========================================
-Media Queries / Responsive Design
+Media Queries
    ================================          */
 /* Small devices / Tablets & Desktops (768px and up) */
 @media screen and (min-width: 48rem) {
     .comment {
+        position: static;
         display: flex;
         flex-direction: row;
         align-items: flex-start;
         gap: var(--large-gap);
+        padding-bottom: var(--card-padding);
     }
 
     .comment__score {
-        grid-area: unset;
-        justify-self: unset;
+        position: static;
+        height: auto;
         flex-direction: column;
         width: var(--score-width);
         padding: var(--score-padding);
     }
 
     .comment__actions {
-        grid-area: unset;
-        justify-self: unset;
+        position: static;
+        height: auto;
     }
 
     .comment__form,

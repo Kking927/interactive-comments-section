@@ -61,6 +61,36 @@ function nestComments(flatComments) {
     return roots;
 }
 
+// Helper function to format new ISO timestamps into relative time or pass through static data.json date strings
+function getRelativeTime(dateString) {
+    if (!dateString) return 'Just now';
+
+    // If it's already a relative text string from data.json (e.g. "1 month ago"), return it as-is
+    if (isNaN(Date.parse(dateString))) {
+        return dateString;
+    }
+
+    // Otherwise, calculate relative time from an ISO timestamp
+    const now = new Date();
+    const past = new Date(dateString);
+    const elapsedSeconds = Math.floor((now - past) / 1000);
+
+    const minutes = Math.floor(elapsedSeconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    const weeks = Math.floor(days / 7);
+    const months = Math.floor(days / 30);
+    const years = Math.floor(days / 365);
+
+    if (years > 0) return `${years} ${years === 1 ? 'year' : 'years'} ago`;
+    if (months > 0) return `${months} ${months === 1 ? 'month' : 'months'} ago`;
+    if (weeks > 0) return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+    if (days > 0) return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+    if (hours > 0) return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+    if (minutes > 0) return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+    return 'Just now';
+}
+
 // Helper to find a comment or reply by its ID in the nested tree
 function findCommentById(comments, id) {
     for (const comment of comments) {
@@ -158,7 +188,7 @@ function createCommentElement(comment) {
     const isCurrentUser = comment.username === commentData.currentUser.username;
 
     // Format the date nicely if needed, or fallback to created_at
-    const formattedDate = comment.created_at ? new Date(comment.created_at).toLocaleDateString() : 'Just now';
+    const formattedDate = getRelativeTime(comment.createdAt || comment.created_at);
 
     li.innerHTML = `
     <article class="comment">
