@@ -395,12 +395,21 @@ if (commentsListEl) {
         const commentItem = replyBtn.closest('.comments__item');
         if (!commentItem) return;
 
-        const existingReplyForm = commentItem.querySelector('.reply-form-container');
+        // Check if there is any open reply form on the page
+        const existingReplyForm = document.querySelector('.reply-form-container');
+        const isCurrentCommentForm = existingReplyForm && commentItem.contains(existingReplyForm);
+
+        // 1. Remove the old reply form if one exists anywhere on the page
         if (existingReplyForm) {
             existingReplyForm.remove();
+        }
+
+        // 2. If the user clicks Reply on the same comment that was open, we just want to close it (toggle)
+        if (isCurrentCommentForm) {
             return;
         }
 
+        // 3. Otherwise, create and open the new reply form
         const usernameEl = commentItem.querySelector('.comment__username');
         const replyingToUser = usernameEl ? usernameEl.textContent : '';
 
