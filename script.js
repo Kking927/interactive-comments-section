@@ -39,22 +39,63 @@ function makeSlashesWrappable(text) {
     return text.replace(/\//g, '/\u200B');
 }
 
-// Helper to transform flat Supabase rows into a nested tree structure
+// Helper to transform flat Supabase rows into sorted roots with flat, aligned replies
 function nestComments(flatComments) {
     const map = {};
     const roots = [];
 
+    // 1. Map each comment by its ID
     flatComments.forEach(comment => {
         map[comment.id] = { ...comment, replies: [] };
     });
 
-    flatComments.forEach(comment => {
-        if (comment.parent_id) {
-            if (map[comment.parent_id]) {
-                map[comment.parent_id].replies.push(map[comment.id]);
+    // Helper to find the top-level root safely without loops
+    function findRoot(item) {
+        let current = item;
+        let depth = 0;
+        while (depth < 5) {
+            depth++;
+            if (!current.parent_id && !current.replying_to) {
+                return current;
             }
+            if (current.parent_id && map[current.parent_id]) {
+                current = map[current.parent_id];
+            } else if (current.replying_to) {
+                const parent = Object.values(map).find(c => c.username === current.replying_to && c.id !== current.id);
+                if (parent) {
+                    current = parent;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        return current;
+    }
+
+    // 2. Assign replies to their ultimate root parent
+    flatComments.forEach(comment => {
+        const item = map[comment.id];
+        if (!comment.parent_id && !comment.replying_to) {
+            roots.push(item);
         } else {
-            roots.push(map[comment.id]);
+            const root = findRoot(item);
+            if (root && root.id !== item.id) {
+                root.replies.push(item);
+            } else {
+                roots.push(item);
+            }
+        }
+    });
+
+    // 3. Sort root comments (Oldest at the top: ascending ID order)
+    roots.sort((a, b) => a.id - b.id);
+
+    // 4. Sort replies oldest to newest for each root container
+    roots.forEach(root => {
+        if (root.replies && root.replies.length > 0) {
+            root.replies.sort((a, b) => a.id - b.id);
         }
     });
 
@@ -127,7 +168,7 @@ async function initComments() {
         const { data: commentsData, error: commentsError } = await supabase
             .from('Interactive Comments Section')
             .select('*')
-            .order('created_at', { ascending: true });
+            .order('id', { ascending: false }); // Oldest IDs at the top
 
         if (commentsError) throw commentsError;
 
