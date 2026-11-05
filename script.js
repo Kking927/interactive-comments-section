@@ -103,16 +103,32 @@ function findCommentById(comments, id) {
     return null;
 }
 
-// ==========================================
-// Initialization & Fetching Data
-// ==========================================
-
-// 1. Fetch comments and user votes from Supabase on page load
 async function initComments() {
+    // 1. Set the avatar immediately
+    if (currentUserAvatarEl && commentData.currentUser.image) {
+        currentUserAvatarEl.src = commentData.currentUser.image.png;
+        currentUserAvatarEl.alt = `${commentData.currentUser.username}'s avatar`;
+    }
+
+    // 2. INSTANT LOAD: Check if we have cached comments in localStorage
+    const cachedComments = localStorage.getItem('cached_comments');
+    if (cachedComments) {
+        try {
+            const parsedComments = JSON.parse(cachedComments);
+            commentData.comments = parsedComments;
+            renderComments(); // Renders instantly with zero wait time!
+        } catch (e) {
+            console.error("Error parsing cache:", e);
+        }
+    } else {
+        // Fallback loading state only if there's no cache yet
+        if (commentsListEl) {
+            commentsListEl.innerHTML = '<p class="loading-text">Loading comments...</p>';
+        }
+    }
+
+    // 3. BACKGROUND FETCH: Get fresh data from Supabase
     try {
-        console.log("Fetching comments and votes from Supabase...");
-        
-        // Fetch comments
         const { data: commentsData, error: commentsError } = await supabase
             .from('Interactive Comments Section')
             .select('*')
@@ -120,7 +136,6 @@ async function initComments() {
 
         if (commentsError) throw commentsError;
 
-        // Fetch current user's votes from the votes table
         const { data: votesData, error: votesError } = await supabase
             .from('votes')
             .select('*')
@@ -128,7 +143,6 @@ async function initComments() {
 
         if (votesError) throw votesError;
 
-        // Map votes into a lookup object: { [comment_id]: vote_type }
         const userVotesMap = {};
         if (votesData) {
             votesData.forEach(vote => {
@@ -136,22 +150,18 @@ async function initComments() {
             });
         }
 
-        // Attach userVote state to each comment object
         const flatCommentsWithVotes = (commentsData || []).map(comment => ({
             ...comment,
             userVote: userVotesMap[comment.id] || 0
         }));
 
-        // Convert flat rows into nested tree structure
-        commentData.comments = nestComments(flatCommentsWithVotes);
+        const nestedTree = nestComments(flatCommentsWithVotes);
+        
+        // Update local state and cache it for next time
+        commentData.comments = nestedTree;
+        localStorage.setItem('cached_comments', JSON.stringify(nestedTree));
 
-        // Set current user avatar in the bottom posting form
-        if (currentUserAvatarEl && commentData.currentUser.image) {
-            currentUserAvatarEl.src = commentData.currentUser.image.png;
-            currentUserAvatarEl.alt = `${commentData.currentUser.username}'s avatar`;
-        }
-
-        // Render comments to the DOM
+        // Re-render with the freshest data from the server
         renderComments();
     } catch (error) {
         console.error('Error loading comments from Supabase:', error);
