@@ -43,11 +43,11 @@ function makeSlashesWrappable(text) {
 function nestComments(flatComments) {
     const map = {};
     const roots = [];
-    
+
     flatComments.forEach(comment => {
         map[comment.id] = { ...comment, replies: [] };
     });
-    
+
     flatComments.forEach(comment => {
         if (comment.parent_id) {
             if (map[comment.parent_id]) {
@@ -57,7 +57,7 @@ function nestComments(flatComments) {
             roots.push(map[comment.id]);
         }
     });
-    
+
     return roots;
 }
 
@@ -120,11 +120,6 @@ async function initComments() {
         } catch (e) {
             console.error("Error parsing cache:", e);
         }
-    } else {
-        // Fallback loading state only if there's no cache yet
-        if (commentsListEl) {
-            commentsListEl.innerHTML = '<p class="loading-text">Loading comments...</p>';
-        }
     }
 
     // 3. BACKGROUND FETCH: Get fresh data from Supabase
@@ -156,7 +151,7 @@ async function initComments() {
         }));
 
         const nestedTree = nestComments(flatCommentsWithVotes);
-        
+
         // Update local state and cache it for next time
         commentData.comments = nestedTree;
         localStorage.setItem('cached_comments', JSON.stringify(nestedTree));
@@ -425,7 +420,7 @@ if (commentsListEl) {
 
         const replyFormDiv = document.createElement('div');
         replyFormDiv.classList.add('reply-form-container');
-        
+
         replyFormDiv.innerHTML = `
             <form class="reply-form" id="reply-form">
                 <img src="${commentData.currentUser.image.png}" alt="${commentData.currentUser.username}" class="reply-form__avatar" />
@@ -481,7 +476,7 @@ if (commentsListEl) {
 // ==========================================
 document.addEventListener('click', (event) => {
     const activeReplyForm = document.querySelector('.reply-form-container');
-    
+
     if (activeReplyForm && !activeReplyForm.contains(event.target) && !event.target.closest('.comment__action--reply')) {
         activeReplyForm.remove();
     }
