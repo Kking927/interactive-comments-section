@@ -36,7 +36,10 @@ let comment4ManuallyDeleted = false;
 // ==========================================
 // Utility Functions
 // ==========================================
-
+/**
+ * Inserts a zero-width space after every slash to allow text wrapping 
+ * without breaking layout boundaries or altering visual strings.
+ */
 function makeSlashesWrappable(text) {
     if (!text) return '';
     return text.replace(/\//g, '/\u200B');
@@ -60,7 +63,12 @@ function escape(string) {
         : (string || '');
 }
 
-// Helper to transform flat Supabase rows into sorted roots with flat, aligned replies
+/**
+ * Transforms a flat array of Supabase rows into a hierarchical tree structure:
+ * - Maps each comment/reply by ID.
+ * - Resolves parent relationships.
+ * - Sorts roots and child replies in ascending chronological order.
+ */
 function nestComments(flatComments) {
     const map = {};
     const roots = [];
@@ -197,11 +205,12 @@ async function initComments() {
 
         if (commentsError) throw commentsError;
 
-        // --- AUTOMATIC RESTORATION FOR DELETABLE SEED COMMENT (ID 4) ---
+        // --- AUTOMATIC RESTORATION FOR DEMO COMMENT (ID 4) ---
+    // Ensures there's always a comment to test deleting/editing
         const targetSeedId = "4";
         const exists = commentsData ? commentsData.some(c => String(c.id) === String(targetSeedId)) : false;
 
-        // Only restore if it's missing AND it wasn't just manually deleted in this session
+        // Only restore if it's missing and it wasn't just manually deleted in this session
         if (!exists && !comment4ManuallyDeleted) {
             console.log('Attempting to restore demo comment 4...');
             const payload = {
@@ -296,15 +305,19 @@ function createCommentElement(comment) {
     // Format the date if needed, or fallback to created_at
     const formattedDate = getRelativeTime(comment.createdAt || comment.created_at);
 
+    // Apply active class if the user previously voted on this comment
+    const upvoteActiveClass = comment.userVote === 1 ? 'active' : '';
+    const downvoteActiveClass = comment.userVote === -1 ? 'active' : '';
+
     li.innerHTML = `
     <article class="comment">
         <!-- Score Counter -->
         <div class="comment__score">
-        <button type="button" class="comment__score-btn comment__score-btn--plus" aria-label="Upvote">
+        <button type="button" class="comment__score-btn comment__score-btn--plus ${upvoteActiveClass}" aria-label="Upvote">
             <svg width="11" height="11" xmlns="http://www.w3.org/2000/svg"><path d="M6.33 10.896c.137 0 .255-.05.354-.149.1-.1.149-.217.149-.354V7.004h3.315c.136 0 .254-.05.354-.149.099-.1.148-.217.148-.354V5.272a.483.483 0 0 0-.148-.354.483.483 0 0 0-.354-.149H6.833V1.4a.483.483 0 0 0-.149-.354.483.483 0 0 0-.354-.149H4.915a.483.483 0 0 0-.354.149c-.1.1-.149.217-.149.354v3.37H1.08a.483.483 0 0 0-.354.15c-.1.099-.149.217-.149.353v1.23c0 .136.05.254.149.353.1.1.217.149.354.149h3.333v3.39c0 .136.05.254.15.353.098.1.216.149.353.149H6.33Z" fill="currentColor"/></svg>
         </button>
         <span class="comment__score-number">${comment.score}</span>
-        <button type="button" class="comment__score-btn comment__score-btn--minus" aria-label="Downvote">
+        <button type="button" class="comment__score-btn comment__score-btn--minus ${downvoteActiveClass}" aria-label="Downvote">
             <svg width="11" height="3" xmlns="http://www.w3.org/2000/svg"><path d="M9.256 2.66c.204 0 .38-.056.53-.167.148-.11.222-.243.222-.396V.722c0-.152-.074-.284-.223-.395a.859.859 0 0 0-.53-.167H.76a.859.859 0 0 0-.53.167C.083.437.009.57.009.722v1.375c0 .153.074.285.223.396a.859.859 0 0 0 .53.167h8.495Z" fill="currentColor"/></svg>
         </button>
         </div>
@@ -676,12 +689,12 @@ if (commentsListEl) {
 
         const editFormDiv = document.createElement('div');
         editFormDiv.classList.add('edit-form-container');
-        editFormDiv.style.marginTop = '0.5rem';
+        editFormDiv.style.marginBlockStart = '0.5rem';
 
         editFormDiv.innerHTML = `
             <form class="edit-form">
                 <textarea class="comment__form-input edit-form__input" style="width: 100%; min-height: 5rem; resize: none;" required>${commentObj.content}</textarea>
-                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.75rem;">
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-block-start: 0.75rem;">
                     <button type="button" class="comment__form-button edit-form__btn--cancel" style="background-color: var(--grey-500);">Cancel</button>
                     <button type="submit" class="comment__form-button">Update</button>
                 </div>

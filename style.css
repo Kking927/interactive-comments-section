@@ -45,8 +45,8 @@ Import Font & Variables
 
     /* Reply Form Spacing */
     /* stylelint-disable-next-line custom-property-pattern */
-    --reply-margin-top: clamp(-1rem, 0.4vw, -0.6875rem);
-    --reply-margin-bottom: clamp(0.75rem, 1vw, 1.25rem);
+    --reply-mbs: clamp(-1rem, 0.4vw, -0.6875rem);
+    --reply-mbe: clamp(0.75rem, 1vw, 1.25rem);
 
     /* Component Width */
     --container-max-width: 47.625rem;
@@ -210,7 +210,7 @@ Comment Card Component (Mobile Base)
     align-items: center;
     gap: var(--score-gap);
     background-color: var(--grey-50);
-    padding: 0 0.875rem;
+    padding: 0 clamp(0.5rem, 2vw, 0.875rem);
     border-radius: var(--radius-md);
     flex-shrink: 0;
 }
@@ -232,10 +232,10 @@ Comment Card Component (Mobile Base)
 .comment__score-btn::before {
     content: '';
     position: absolute;
-    top: -8px;
-    bottom: -8px;
-    left: -8px;
-    right: -8px;
+    inset-block-start: -8px;
+    inset-block-end: -8px;
+    inset-inline-start: -8px;
+    inset-inline-end: -8px;
 }
 
 .comment__score-btn:hover,
@@ -367,8 +367,8 @@ Nested Replies
     content: '';
     position: absolute;
     inset-inline-start: 0;
-    top: 0;
-    bottom: 1rem;
+    inset-block-start: 0;
+    inset-block-end: 1rem;
     width: var(--reply-line);
     background-color: var(--grey-100);
 }
@@ -383,8 +383,8 @@ Nested Replies
 Reply Form Styles
    ========================================== */
 .reply-form-container {
-    margin-block-start: var(--reply-margin-top);
-    margin-block-end: var(--reply-margin-bottom);
+    margin-block-start: var(--reply-mbs);
+    margin-block-end: var(--reply-mbe);
     background-color: var(--white);
     border-radius: var(--radius-md);
     padding: var(--card-padding);
@@ -509,6 +509,7 @@ Add Comment Form
 Delete Confirmation Modal Styles 
    ========================================== */
 dialog.modal-wrapper {
+    /* stylelint-disable-next-line property-no-unknown, declaration-property-value-allowed-list */
     position: fixed;
     inset: 0;
     margin: auto;
@@ -673,9 +674,12 @@ Accessibility: Visually Hidden
 ========================================== */
 .visually-hidden {
     position: absolute;
+    /* stylelint-disable-next-line declaration-property-value-allowed-list */
     width: 1px;
+    /* stylelint-disable-next-line declaration-property-value-allowed-list */
     height: 1px;
     padding: 0;
+    /* stylelint-disable-next-line declaration-property-value-allowed-list */
     margin: -1px;
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
