@@ -30,6 +30,9 @@ const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
 // Keep track of which comment ID is targeted for deletion
 let commentToDeleteId = null;
 
+// Session flag to prevent auto-restoring comment 4 after manual deletion
+let comment4ManuallyDeleted = false;
+
 // ==========================================
 // Utility Functions
 // ==========================================
@@ -37,6 +40,24 @@ let commentToDeleteId = null;
 function makeSlashesWrappable(text) {
     if (!text) return '';
     return text.replace(/\//g, '/\u200B');
+}
+
+// Converts potentially dangerous characters into safe HTML entities (XSS Prevention)
+const htmlEscapes = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+};
+
+const reUnescapedHtml = /[&<>"']/g;
+const reHasUnescapedHtml = RegExp(reUnescapedHtml.source);
+
+function escape(string) {
+    return (string && reHasUnescapedHtml.test(string))
+        ? string.replace(reUnescapedHtml, (chr) => htmlEscapes[chr])
+        : (string || '');
 }
 
 // Helper to transform flat Supabase rows into sorted roots with flat, aligned replies
@@ -132,10 +153,11 @@ function getRelativeTime(dateString) {
     return 'Just now';
 }
 
-// Helper to find a comment or reply by its ID in the nested tree
+// Helper to find a comment or reply by its ID
 function findCommentById(comments, id) {
     for (const comment of comments) {
-        if (comment.id == id) return comment;
+        if (String(comment.id) === String(id)) return comment; 
+        
         if (comment.replies && comment.replies.length > 0) {
             const found = findCommentById(comment.replies, id);
             if (found) return found;
@@ -144,6 +166,9 @@ function findCommentById(comments, id) {
     return null;
 }
 
+// ==========================================
+// Initialize, Fetch & Self-Heal Comments
+// ==========================================
 async function initComments() {
     // 1. Set the avatar immediately
     if (currentUserAvatarEl && commentData.currentUser.image) {
@@ -165,12 +190,47 @@ async function initComments() {
 
     // 3. BACKGROUND FETCH: Get fresh data from Supabase
     try {
-        const { data: commentsData, error: commentsError } = await supabase
+        let { data: commentsData, error: commentsError } = await supabase
             .from('Interactive Comments Section')
             .select('*')
             .order('id', { ascending: false }); // Oldest IDs at the top
 
         if (commentsError) throw commentsError;
+
+        // --- AUTOMATIC RESTORATION FOR DELETABLE SEED COMMENT (ID 4) ---
+        const targetSeedId = "4";
+        const exists = commentsData ? commentsData.some(c => String(c.id) === String(targetSeedId)) : false;
+
+        // Only restore if it's missing AND it wasn't just manually deleted in this session
+        if (!exists && !comment4ManuallyDeleted) {
+            console.log('Attempting to restore demo comment 4...');
+            const payload = {
+                id: 4,
+                content: "I couldn't agree more with this. Everything moves so fast and it always seems like everyone knows the newest library/framework. But the fundamentals are what stay constant.",
+                score: 2,
+                username: "juliusomo",
+                user_image: "images/image-juliusomo.png",
+                replying_to: "ramsesmiron",
+                parent_id: 2,
+                created_at: new Date().toISOString()
+            };
+
+            const { error: restoreError } = await supabase
+                .from('Interactive Comments Section')
+                .upsert([payload]);
+
+            if (restoreError) {
+                console.error('FAILED TO RESTORE COMMENT 4:', restoreError.message, restoreError.details, restoreError.hint);
+            } else {
+                console.log('Successfully restored comment 4!');
+                const { data: refreshedData } = await supabase
+                    .from('Interactive Comments Section')
+                    .select('*')
+                    .order('id', { ascending: false });
+                commentsData = refreshedData;
+            }
+        }
+        // --------------------------------------------------------------
 
         const { data: votesData, error: votesError } = await supabase
             .from('votes')
@@ -233,7 +293,7 @@ function createCommentElement(comment) {
     // Check if this comment belongs to the logged-in user
     const isCurrentUser = comment.username === commentData.currentUser.username;
 
-    // Format the date nicely if needed, or fallback to created_at
+    // Format the date if needed, or fallback to created_at
     const formattedDate = getRelativeTime(comment.createdAt || comment.created_at);
 
     li.innerHTML = `
@@ -324,7 +384,8 @@ if (commentFormEl) {
             username: commentData.currentUser.username,
             user_image: commentData.currentUser.image.png,
             replying_to: null,
-            parent_id: null
+            parent_id: null,
+            created_at: new Date().toISOString()
         };
 
         try {
@@ -355,6 +416,8 @@ if (commentsListEl) {
         if (!commentItem) return;
 
         const commentId = commentItem.dataset.id;
+        const numericCommentId = parseInt(commentId, 10); // Parse to integer for int8 columns
+
         const isUpvote = scoreBtn.classList.contains('comment__score-btn--plus');
         const scoreNumberEl = commentItem.querySelector('.comment__score-number');
 
@@ -393,33 +456,36 @@ if (commentsListEl) {
         const newScore = currentScore + scoreChange;
 
         try {
-            // 1. Update the votes table (upsert or delete record)
+            // 1. Update the votes table using numericCommentId
             if (newVoteType === 0) {
                 const { error: deleteError } = await supabase
                     .from('votes')
                     .delete()
-                    .match({ comment_id: commentId, username: commentData.currentUser.username });
+                    .match({ comment_id: numericCommentId, username: commentData.currentUser.username });
                 if (deleteError) throw deleteError;
             } else {
                 const { error: upsertError } = await supabase
                     .from('votes')
                     .upsert({
-                        comment_id: commentId,
+                        comment_id: numericCommentId,
                         username: commentData.currentUser.username,
                         vote_type: newVoteType
                     }, { onConflict: 'comment_id, username' });
                 if (upsertError) throw upsertError;
             }
 
-            // 2. Update the comment's total score in the main table
+            // 2. Update the comment's total score in the main table using numericCommentId
             const { error: scoreError } = await supabase
                 .from('Interactive Comments Section')
                 .update({ score: newScore })
-                .eq('id', commentId);
+                .eq('id', numericCommentId);
 
             if (scoreError) throw scoreError;
 
-            // Update local object and UI
+            // 3. Clear cache so local storage doesn't overwrite the new score on reload
+            localStorage.removeItem('cached_comments');
+
+            // Update local object and UI instantly
             commentObj.score = newScore;
             commentObj.userVote = newVoteType;
             scoreNumberEl.textContent = newScore;
@@ -481,10 +547,16 @@ if (commentsListEl) {
         const replyForm = replyFormDiv.querySelector('.reply-form');
         replyForm.addEventListener('submit', async (ev) => {
             ev.preventDefault();
-            const content = textarea.value.trim();
+
+            // --- STRIP THE PRE-FILLED @USERNAME HERE ---
+            const rawContent = textarea.value.trim();
+            const content = rawContent.startsWith('@')
+                ? rawContent.replace(/^@\S+\s*/, '')
+                : rawContent;
+
             if (!content) return;
 
-            const parentId = commentItem.dataset.id;
+            const parentId = parseInt(commentItem.dataset.id, 10);
 
             const newReply = {
                 content: content,
@@ -492,7 +564,8 @@ if (commentsListEl) {
                 username: commentData.currentUser.username,
                 user_image: commentData.currentUser.image.png,
                 replying_to: replyingToUser,
-                parent_id: parentId
+                parent_id: parentId,
+                created_at: new Date().toISOString()
             };
 
             try {
@@ -524,9 +597,8 @@ document.addEventListener('click', (event) => {
 });
 
 // ==========================================
-// Delete Modal & Actions Logic
+// Delete Modal & Actions Logic (Native <dialog>)
 // ==========================================
-
 if (commentsListEl) {
     commentsListEl.addEventListener('click', (e) => {
         const deleteBtn = e.target.closest('.comment__action--delete');
@@ -535,14 +607,18 @@ if (commentsListEl) {
         const commentItem = deleteBtn.closest('.comments__item');
         if (commentItem) {
             commentToDeleteId = commentItem.dataset.id;
-            deleteModalEl.classList.remove('invisible');
+            if (deleteModalEl && typeof deleteModalEl.showModal === 'function') {
+                deleteModalEl.showModal();
+            }
         }
     });
 }
 
 if (cancelDeleteBtn) {
     cancelDeleteBtn.addEventListener('click', () => {
-        deleteModalEl.classList.add('invisible');
+        if (deleteModalEl && typeof deleteModalEl.close === 'function') {
+            deleteModalEl.close();
+        }
         commentToDeleteId = null;
     });
 }
@@ -550,6 +626,11 @@ if (cancelDeleteBtn) {
 if (confirmDeleteBtn) {
     confirmDeleteBtn.addEventListener('click', async () => {
         if (!commentToDeleteId) return;
+
+        // Check if comment 4 is being deleted
+        if (String(commentToDeleteId) === "4") {
+            comment4ManuallyDeleted = true;
+        }
 
         try {
             const { error } = await supabase
@@ -559,7 +640,9 @@ if (confirmDeleteBtn) {
 
             if (error) throw error;
 
-            deleteModalEl.classList.add('invisible');
+            if (deleteModalEl && typeof deleteModalEl.close === 'function') {
+                deleteModalEl.close();
+            }
             commentToDeleteId = null;
             await initComments();
         } catch (error) {
@@ -626,17 +709,30 @@ if (commentsListEl) {
             const updatedContent = textarea.value.trim();
             if (!updatedContent) return;
 
+            const numericCommentId = parseInt(commentId, 10);
+
             try {
+                // 1. Update Supabase in the background
                 const { error } = await supabase
                     .from('Interactive Comments Section')
                     .update({ content: updatedContent })
-                    .eq('id', commentId);
+                    .eq('id', numericCommentId);
 
                 if (error) throw error;
 
+                // 2. Update the local JavaScript object immediately
+                commentObj.content = updatedContent;
+
+                // 3. Update the paragraph on the screen instantly
+                const replyingToHtml = commentObj.replying_to ? `<span class="comment__replying-to">@${commentObj.replying_to}</span> ` : '';
+                commentTextP.innerHTML = replyingToHtml + makeSlashesWrappable(updatedContent);
+
+                // 4. Update the localStorage cache so it matches
+                localStorage.setItem('cached_comments', JSON.stringify(commentData.comments));
+
+                // 5. Clean up the form and bring the text back
                 editFormDiv.remove();
                 commentTextP.style.display = '';
-                await initComments();
             } catch (error) {
                 console.error('Error updating comment in Supabase:', error);
                 alert('Failed to update comment. Check console for details.');

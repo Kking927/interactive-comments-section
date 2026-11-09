@@ -343,7 +343,8 @@ Comment Card Component (Mobile Base)
 }
 
 .comment__text {
-    margin: 0 auto;
+    margin: 0;
+    text-align: left;
     color: var(--grey-500);
 }
 
@@ -505,38 +506,52 @@ Add Comment Form
 }
 
 /* ==========================================
-Delete Confirmation Modal Styles    
-  ========================================== */
-.modal-wrapper {
+Delete Confirmation Modal Styles 
+   ========================================== */
+dialog.modal-wrapper {
     position: fixed;
     inset: 0;
-    background-color: var(--modal-overlay);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    opacity: 1;
-    visibility: visible;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.modal-wrapper.invisible {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-}
-
-.modal {
+    margin: auto;
     background-color: var(--white);
     width: 90%;
     max-width: 25rem;
     padding: var(--modal-padding);
+    border: none;
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-modal);
     display: flex;
     flex-direction: column;
     gap: var(--base-gap);
-    margin-block-start: var(--modal-margin-top);
+    
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease, overlay 0.3s ease allow-discrete, display 0.3s ease allow-discrete;
+}
+
+dialog.modal-wrapper[open] {
+    opacity: 1;
+    visibility: visible;
+}
+
+dialog.modal-wrapper::backdrop {
+    background-color: var(--modal-overlay);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+dialog.modal-wrapper[open]::backdrop {
+    opacity: 1;
+}
+
+.modal {
+    background-color: transparent;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--base-gap);
 }
 
 .modal h3 {
