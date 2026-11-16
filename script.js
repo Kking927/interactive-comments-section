@@ -16,7 +16,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyA_HM2PxlHr_9GrJiHxh0mz8pB3xIpfPu0",
+    "YOUR_FIREBASE_API_KEY", // Keep public keys safe or restrict them in Google Cloud Console
     authDomain: "interactive-comments-demo.firebaseapp.com",
     projectId: "interactive-comments-demo",
     storageBucket: "interactive-comments-demo.firebasestorage.app",
