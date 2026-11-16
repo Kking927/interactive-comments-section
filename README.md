@@ -51,16 +51,16 @@ Users should be able to:
 - CSS custom properties & Flexbox
 - Mobile-first workflow
 - JavaScript (ES6+)
-- Supabase - Backend & Database
+- Firebase Cloud Firestore
 
 ### What I learned
 
 Working through this project provided practical experience integrating a cloud database with dynamic DOM rendering:
 
-- **Database Integration with Supabase**: Configured Supabase to persist user comments, replies, and vote counts, replacing local state.
-- **Dynamic HTML Generation**: Rendered nested comment threads programmatically using vanilla JavaScript based on fetched database payloads.
-- **Handling Mixed Date Formats**: Built custom logic to display both static legacy date strings from initial data and dynamic relative timestamps for new entries.
-- **Data Seeding**: Practiced migrating initial local data (`data.json`) directly into a relational database.
+- **Database Integration with Firebase Firestore:** Connected to Firebase to store user comments, nested replies, and vote history across browser sessions.
+- **Dynamic HTML Generation:** Rendered nested comment threads programmatically using vanilla JavaScript based on fetched database payloads.
+- **Handling Mixed Date Formats:** Built custom logic to display both static legacy date strings from initial data and dynamic relative timestamps for new entries.
+- **Data Seeding:** Practiced migrating initial local data (`data.json`) directly into a NoSQL cloud database.
 
 ## Author
 
