@@ -1,5 +1,5 @@
 // ==========================================
-// 1. Firebase Initialization (v10 CDN)
+// Firebase Initialization & Config
 // ==========================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -15,14 +15,14 @@ import {
     where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// Replace with your actual config from Firebase Console > Project Settings
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyA_HM2PxlHr_9GrJiHxh0mz8pB3xIpfPu0",
+    authDomain: "interactive-comments-demo.firebaseapp.com",
+    projectId: "interactive-comments-demo",
+    storageBucket: "interactive-comments-demo.firebasestorage.app",
+    messagingSenderId: "329934664917",
+    appId: "1:329934664917:web:0f5c69534f2b6d9d239e5c",
+    measurementId: "G-S4HNQK9TRZ"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -30,7 +30,9 @@ const db = getFirestore(app);
 const commentsCol = collection(db, 'comments');
 const votesCol = collection(db, 'votes');
 
-// Global state to hold comments and current user info
+// ==========================================
+// Global State
+// ==========================================
 let commentData = {
     currentUser: {
         username: "juliusomo",
